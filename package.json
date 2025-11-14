@@ -1,0 +1,87 @@
+{
+  "name": "vscode-spotify-widget",
+  "displayName": "Spotify Widget",
+  "description": "A beautiful Spotify player widget for Visual Studio Code that displays your currently playing track with playback controls, designed to look like the Spotify mobile app.",
+  "version": "1.0.0",
+  "publisher": "alexyssh",
+  "author": {
+    "name": "alexyssh",
+    "url": "https://github.com/itsnotalexy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/itsnotalexy/spotify-vscode-widget"
+  },
+  "bugs": {
+    "url": "https://github.com/itsnotalexy/spotify-vscode-widget/issues"
+  },
+  "homepage": "https://github.com/itsnotalexy/spotify-vscode-widget#readme",
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#1db954",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "spotify-widget.authenticate",
+        "title": "Authenticate with Spotify"
+      },
+      {
+        "command": "spotify-widget.show",
+        "title": "Show Spotify Widget"
+      },
+      {
+        "command": "spotify-widget.hide",
+        "title": "Hide Spotify Widget"
+      }
+    ],
+    "configuration": {
+      "title": "Spotify Widget",
+      "properties": {
+        "spotifyWidget.clientId": {
+          "type": "string",
+          "default": "",
+          "description": "Your Spotify Application Client ID (get from https://developer.spotify.com/dashboard)",
+          "order": 1
+        },
+        "spotifyWidget.refreshInterval": {
+          "type": "number",
+          "default": 1500,
+          "description": "Refresh interval in milliseconds for updating currently playing track (1500ms = 1.5 seconds)",
+          "order": 2
+        }
+      }
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "eslint": "^9.39.1",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
+  },
+  "keywords": [
+    "spotify",
+    "music",
+    "player",
+    "widget"
+  ],
+  "license": "MIT"
+}
