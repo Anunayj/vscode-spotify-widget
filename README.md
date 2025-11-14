@@ -1,5 +1,9 @@
 # Spotify VS Code Widget
 
+<p align="center">
+  <img src="icon.png" alt="Spotify Widget Icon" width="100"/>
+</p>
+
 A beautiful Spotify player widget for Visual Studio Code that displays your currently playing track with playback controls, designed to look like the Spotify mobile app.
 
 ## Features
@@ -22,7 +26,7 @@ A beautiful Spotify player widget for Visual Studio Code that displays your curr
 4. Fill in the details:
    - **App name**: VS Code Spotify Widget (or any name)
    - **App description**: Personal Spotify widget
-   - **Redirect URI**: `https://itsnotalexy.github.io/spotify-vscode-widget/callback`
+   - **Redirect URI**: `https://itsnotalexy.github.io/vscode-spotify-widget/callback`
    - **Which API/SDKs are you planning to use?**: Web API
 5. Save and open your app settings
 6. Copy your **Client ID** (NOT the Client Secret!)
