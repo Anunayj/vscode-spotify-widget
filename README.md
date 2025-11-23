@@ -99,7 +99,7 @@ A beautiful Spotify player widget for Visual Studio Code that displays your curr
 ## Known Limitations
 - Track information updates may have a slight delay
 - Playback controls require an active Spotify session (via app or web player)
-- Native media key support (robotjs) requires compilation during install; falls back to Web API if unavailable
+- Native media key support (robotjs) requires native compilation during install and may not work on headless systems or some Linux distributions; automatically falls back to Web API if unavailable
 
 ## Development
 To work on this extension:

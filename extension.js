@@ -14,6 +14,13 @@ try {
     console.log('robotjs not available, will use Web API fallback:', error.message);
 }
 
+// Media key mappings for robotjs
+const MEDIA_KEYS = {
+    'PlayPause': 'audio_play',
+    'Next': 'audio_next', 
+    'Previous': 'audio_prev'
+};
+
 
 function getClientId() {
     const config = vscode.workspace.getConfiguration('spotifyWidget');
@@ -338,19 +345,11 @@ function createEmptyTrackInfo(artist, album) {
 
 async function sendSpotifyCommand(command) {
     // Try native media key control via robotjs first for minimal latency
-    if (robot) {
+    if (robot && MEDIA_KEYS[command]) {
         try {
-            const mediaKeys = {
-                'PlayPause': 'audio_play',
-                'Next': 'audio_next', 
-                'Previous': 'audio_prev'
-            };
-            
-            if (mediaKeys[command]) {
-                robot.keyTap(mediaKeys[command]);
-                console.log(`Sent ${command} via robotjs media key`);
-                return;
-            }
+            robot.keyTap(MEDIA_KEYS[command]);
+            console.log(`Sent ${command} via robotjs media key`);
+            return;
         } catch (error) {
             console.log(`robotjs failed: ${error.message}, falling back to Web API`);
         }
