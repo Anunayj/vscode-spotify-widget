@@ -6,12 +6,16 @@ let accessToken = null;
 let tokenExpiresAt = null;
 let lastTrackId = null;
 
+// Create output channel for logging
+const outputChannel = vscode.window.createOutputChannel('Spotify Widget');
+
 // Try to load robotjs for native media key support
 let robot = null;
 try {
     robot = require('robotjs');
+    outputChannel.appendLine('robotjs loaded successfully');
 } catch (error) {
-    console.log('robotjs not available, will use Web API fallback:', error.message);
+    outputChannel.appendLine(`robotjs not available, will use Web API fallback: ${error.message}`);
 }
 
 // Media key mappings for robotjs
@@ -35,7 +39,7 @@ function getRedirectUri() {
 const SCOPES = 'user-read-playback-state user-modify-playback-state user-read-currently-playing';
 
 function activate(context) {
-    console.log('Spotify Widget extension is now active');
+    outputChannel.appendLine('Spotify Widget extension is now active');
     accessToken = context.globalState.get('spotifyAccessToken');
     tokenExpiresAt = context.globalState.get('spotifyTokenExpiresAt');
 
@@ -348,10 +352,10 @@ async function sendSpotifyCommand(command) {
     if (robot && MEDIA_KEYS[command]) {
         try {
             robot.keyTap(MEDIA_KEYS[command]);
-            console.log(`Sent ${command} via robotjs media key`);
+            outputChannel.appendLine(`Sent ${command} via robotjs media key`);
             return;
         } catch (error) {
-            console.log(`robotjs failed: ${error.message}, falling back to Web API`);
+            outputChannel.appendLine(`robotjs failed: ${error.message}, falling back to Web API`);
         }
     }
 
@@ -378,7 +382,7 @@ async function sendSpotifyCommand(command) {
                 }
             } catch (error) {
                 // If current state check fails, try toggling via pause (safer fallback)
-                console.log(`Could not determine playback state: ${error.message}, attempting pause`);
+                outputChannel.appendLine(`Could not determine playback state: ${error.message}, attempting pause`);
                 try {
                     await spotifyApiRequest('/v1/me/player/pause', 'PUT');
                 } catch {
@@ -390,9 +394,9 @@ async function sendSpotifyCommand(command) {
             const endpoint = apiEndpoints[command];
             await spotifyApiRequest(endpoint.path, endpoint.method);
         }
-        console.log(`Sent ${command} via Spotify Web API`);
+        outputChannel.appendLine(`Sent ${command} via Spotify Web API`);
     } catch (error) {
-        console.error('Spotify command failed:', error);
+        outputChannel.appendLine(`Spotify command failed: ${error.message}`);
         vscode.window.showErrorMessage('Failed to control Spotify. Make sure Spotify is running and you are authenticated.');
     }
 }
@@ -407,6 +411,9 @@ function getWebviewContent() {
 function deactivate() {
     if (updateInterval) {
         clearInterval(updateInterval);
+    }
+    if (outputChannel) {
+        outputChannel.dispose();
     }
 }
 
