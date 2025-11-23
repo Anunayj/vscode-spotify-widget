@@ -17,7 +17,7 @@ function getRedirectUri() {
     return config.get('callbackUrl', 'https://anunayj.github.io/vscode-spotify-widget-auth/');
 }
 
-const SCOPES = 'user-read-playback-state user-modify-playback-state user-read-currently-playing';
+const SCOPES = 'user-read-playback-state user-modify-playback-state user-read-currently-playing user-read-playback-position';
 
 function activate(context) {
     console.log('Spotify Widget extension is now active');
@@ -200,6 +200,55 @@ function createOrShowSpotifyWidget(context) {
                         data: trackInfo
                     });
                     break;
+                case 'getQueue':
+                    const queueData = await getQueue();
+                    spotifyPanel.webview.postMessage({
+                        command: 'updateQueue',
+                        data: queueData
+                    });
+                    break;
+                case 'skipToNext':
+                    try {
+                        await skipToNext();
+                        // Refresh both track and queue after skipping
+                        const newTrackInfo = await getCurrentTrack();
+                        const newQueueData = await getQueue();
+                        spotifyPanel.webview.postMessage({
+                            command: 'updateTrack',
+                            data: newTrackInfo
+                        });
+                        spotifyPanel.webview.postMessage({
+                            command: 'updateQueue',
+                            data: newQueueData
+                        });
+                    } catch (error) {
+                        vscode.window.showErrorMessage('Failed to skip track: ' + error.message);
+                    }
+                    break;
+                case 'skipTracks':
+                    try {
+                        // Skip multiple times to reach the desired track
+                        const skipCount = message.count || 1;
+                        for (let i = 0; i < skipCount; i++) {
+                            await skipToNext();
+                            // Small delay between skips to avoid rate limiting
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                        }
+                        // Refresh both track and queue after skipping
+                        const newTrackInfo = await getCurrentTrack();
+                        const newQueueData = await getQueue();
+                        spotifyPanel.webview.postMessage({
+                            command: 'updateTrack',
+                            data: newTrackInfo
+                        });
+                        spotifyPanel.webview.postMessage({
+                            command: 'updateQueue',
+                            data: newQueueData
+                        });
+                    } catch (error) {
+                        vscode.window.showErrorMessage('Failed to skip tracks: ' + error.message);
+                    }
+                    break;
             }
         },
         undefined,
@@ -267,12 +316,12 @@ async function getCurrentTrack() {
     }
 }
 
-function spotifyApiRequest(path) {
+function spotifyApiRequest(path, method = 'GET', postData = null) {
     return new Promise((resolve, reject) => {
         const options = {
             hostname: 'api.spotify.com',
             path: path,
-            method: 'GET',
+            method: method,
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
@@ -306,6 +355,10 @@ function spotifyApiRequest(path) {
             req.destroy();
             reject(new Error('Request timeout'));
         });
+        
+        if (postData) {
+            req.write(JSON.stringify(postData));
+        }
         req.end();
     });
 }
@@ -321,6 +374,60 @@ function createEmptyTrackInfo(artist, album) {
         duration: 0,
         error: true
     };
+}
+
+async function getQueue() {
+    if (!accessToken) {
+        return { queue: [], error: 'Not authenticated' };
+    }
+    
+    try {
+        const data = await spotifyApiRequest('/v1/me/player/queue');
+        
+        if (!data) {
+            return { queue: [], error: 'No queue available' };
+        }
+        
+        // Format the queue data for the webview
+        const queue = data.queue.map(item => ({
+            id: item.id,
+            name: item.name,
+            artist: item.artists.map(a => a.name).join(', '),
+            album: item.album.name,
+            albumArt: item.album.images[0]?.url || '',
+            duration: item.duration_ms,
+            uri: item.uri
+        }));
+        
+        return {
+            currentlyPlaying: data.currently_playing ? {
+                id: data.currently_playing.id,
+                name: data.currently_playing.name,
+                artist: data.currently_playing.artists.map(a => a.name).join(', '),
+                album: data.currently_playing.album.name,
+                albumArt: data.currently_playing.album.images[0]?.url || '',
+                duration: data.currently_playing.duration_ms,
+                uri: data.currently_playing.uri
+            } : null,
+            queue: queue
+        };
+    } catch (error) {
+        console.error('Error fetching queue:', error);
+        return { queue: [], error: error.message };
+    }
+}
+
+async function skipToNext() {
+    if (!accessToken) {
+        throw new Error('Not authenticated');
+    }
+    
+    try {
+        await spotifyApiRequest('/v1/me/player/next', 'POST');
+    } catch (error) {
+        console.error('Error skipping to next:', error);
+        throw error;
+    }
 }
 
 async function sendSpotifyCommand(command) {
