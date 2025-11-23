@@ -230,9 +230,9 @@ function createOrShowSpotifyWidget(context) {
                         // Skip multiple times to reach the desired track
                         const skipCount = message.count || 1;
                         
-                        // Validate skipCount is a positive integer
-                        if (!Number.isInteger(skipCount) || skipCount <= 0) {
-                            throw new Error('Invalid skip count');
+                        // Validate skipCount is a safe positive integer
+                        if (typeof skipCount !== 'number' || !Number.isSafeInteger(skipCount) || skipCount <= 0) {
+                            throw new Error('Invalid skip count: must be a positive integer');
                         }
                         
                         // Limit maximum skips to prevent abuse

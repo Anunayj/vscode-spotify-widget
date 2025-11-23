@@ -915,9 +915,9 @@
                         console.error('Invalid queue index:', queueItem.dataset.index);
                         return;
                     }
-                    // Queue[0] is the next track to play, so to play queue[idx],
-                    // we need to skip (idx + 1) times: once to get to queue[0],
-                    // then idx more times to reach queue[idx]
+                    // The currently playing track is not in the queue array.
+                    // Queue[0] is the next track. To play queue[idx], we skip (idx + 1) times.
+                    // Example: to play queue[0], skip 1 time; to play queue[2], skip 3 times.
                     vscode.postMessage({ 
                         command: 'skipTracks', 
                         count: idx + 1 
