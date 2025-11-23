@@ -516,6 +516,7 @@
             justify-content: center;
             gap: 8px;
             margin: 20px 0 15px 0;
+            position: relative;
         }
 
         .queue-toggle-btn:hover {
@@ -529,10 +530,17 @@
             transform: scale(0.98);
         }
 
+        .queue-toggle-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
         .queue-toggle-btn svg {
             width: 18px;
             height: 18px;
             transition: transform 0.3s ease;
+            position: relative;
+            z-index: 1;
         }
 
         .queue-toggle-btn.active svg {
@@ -549,24 +557,30 @@
             max-height: 400px;
             overflow-y: auto;
             overflow-x: hidden;
+            overscroll-behavior: contain;
+            padding-right: 4px;
         }
 
         .queue-container::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
 
         .queue-container::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
+            background: transparent;
+            margin-right: 4px;
         }
 
         .queue-container::-webkit-scrollbar-thumb {
-            background: rgba(29, 185, 84, 0.3);
-            border-radius: 4px;
+            background: rgba(29, 185, 84, 0.4);
+            border-radius: 3px;
+            border-right: 2px solid transparent;
+            background-clip: padding-box;
         }
 
         .queue-container::-webkit-scrollbar-thumb:hover {
-            background: rgba(29, 185, 84, 0.5);
+            background: rgba(29, 185, 84, 0.6);
+            border-right: 2px solid transparent;
+            background-clip: padding-box;
         }
 
         .queue-header {
@@ -576,6 +590,10 @@
             margin-bottom: 12px;
             padding: 0 4px;
             letter-spacing: 0.5px;
+        }
+
+        .queue-list {
+            padding-right: 2px;
         }
 
         .queue-empty {
