@@ -6,6 +6,14 @@ let accessToken = null;
 let tokenExpiresAt = null;
 let lastTrackId = null;
 
+// Try to load robotjs for native media key support
+let robot = null;
+try {
+    robot = require('robotjs');
+} catch (error) {
+    console.log('robotjs not available, will use Web API fallback:', error.message);
+}
+
 
 function getClientId() {
     const config = vscode.workspace.getConfiguration('spotifyWidget');
@@ -329,6 +337,26 @@ function createEmptyTrackInfo(artist, album) {
 }
 
 async function sendSpotifyCommand(command) {
+    // Try native media key control via robotjs first for minimal latency
+    if (robot) {
+        try {
+            const mediaKeys = {
+                'PlayPause': 'audio_play',
+                'Next': 'audio_next', 
+                'Previous': 'audio_prev'
+            };
+            
+            if (mediaKeys[command]) {
+                robot.keyTap(mediaKeys[command]);
+                console.log(`Sent ${command} via robotjs media key`);
+                return;
+            }
+        } catch (error) {
+            console.log(`robotjs failed: ${error.message}, falling back to Web API`);
+        }
+    }
+
+    // Fallback to Spotify Web API
     if (!accessToken) {
         vscode.window.showErrorMessage('Not authenticated with Spotify. Please run "Authenticate with Spotify" command.');
         return;
@@ -363,6 +391,7 @@ async function sendSpotifyCommand(command) {
             const endpoint = apiEndpoints[command];
             await spotifyApiRequest(endpoint.path, endpoint.method);
         }
+        console.log(`Sent ${command} via Spotify Web API`);
     } catch (error) {
         console.error('Spotify command failed:', error);
         vscode.window.showErrorMessage('Failed to control Spotify. Make sure Spotify is running and you are authenticated.');
