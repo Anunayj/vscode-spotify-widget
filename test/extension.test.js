@@ -12,4 +12,18 @@ suite('Extension Test Suite', () => {
 		assert.strictEqual(-1, [1, 2, 3].indexOf(5));
 		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
 	});
+
+	test('Extension should be present', () => {
+		assert.ok(vscode.extensions.getExtension('alexyssh.vscode-spotify-widget'));
+	});
+
+	test('Commands should be registered', async () => {
+		// Give extension time to fully activate and register commands
+		await new Promise(resolve => setTimeout(resolve, 100));
+		
+		const commands = await vscode.commands.getCommands(true);
+		assert.ok(commands.includes('spotify-widget.authenticate'));
+		assert.ok(commands.includes('spotify-widget.show'));
+		assert.ok(commands.includes('spotify-widget.hide'));
+	});
 });

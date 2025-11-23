@@ -20,8 +20,9 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            align-items: flex-start;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         body::before {
@@ -496,6 +497,202 @@
         .player-container:hover .spotify-logo {
             opacity: 0.6;
         }
+
+        /* Queue Styles */
+        .queue-toggle-btn {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #b3b3b3;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0 15px 0;
+            position: relative;
+        }
+
+        .queue-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #1db954;
+            transform: scale(1.05);
+        }
+
+        .queue-toggle-btn:active {
+            transform: scale(0.98);
+        }
+
+        .queue-toggle-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .queue-toggle-btn svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .queue-toggle-btn.active svg {
+            transform: rotate(180deg);
+        }
+
+        .queue-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .queue-container.show {
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior: contain;
+            padding-right: 4px;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .queue-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .queue-container::-webkit-scrollbar-track {
+            background: transparent;
+            margin-right: 4px;
+        }
+
+        .queue-container::-webkit-scrollbar-thumb {
+            background: rgba(29, 185, 84, 0.4);
+            border-radius: 3px;
+            border-right: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        .queue-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(29, 185, 84, 0.6);
+            border-right: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        .queue-header {
+            font-size: 13px;
+            color: #b3b3b3;
+            font-weight: 700;
+            margin-bottom: 12px;
+            padding: 0 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .queue-list {
+            padding-right: 2px;
+        }
+
+        .queue-empty {
+            text-align: center;
+            color: #666;
+            padding: 30px 20px;
+            font-size: 14px;
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            gap: 12px;
+            margin-bottom: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .queue-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(29, 185, 84, 0.3);
+            transform: translateX(4px);
+        }
+
+        .queue-item-index {
+            color: #666;
+            font-size: 13px;
+            font-weight: 700;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .queue-item:hover .queue-item-index {
+            color: #1db954;
+        }
+
+        .queue-item-art {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #3e3e3e 0%, #1a1a1a 100%);
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .queue-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .queue-item-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .queue-item:hover .queue-item-name {
+            color: #1db954;
+        }
+
+        .queue-item-artist {
+            font-size: 12px;
+            color: #888;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .queue-item-duration {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .queue-item-play-icon {
+            width: 20px;
+            height: 20px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            color: #1db954;
+            flex-shrink: 0;
+        }
+
+        .queue-item:hover .queue-item-play-icon {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -543,11 +740,26 @@
             </button>
         </div>
 
+        <button id="queueToggleBtn" class="queue-toggle-btn" title="Toggle Queue">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/>
+            </svg>
+            <span id="queueToggleText">Show Queue</span>
+        </button>
+
+        <div id="queueContainer" class="queue-container">
+            <div class="queue-header">Up Next</div>
+            <div id="queueList"></div>
+        </div>
+
         <div class="spotify-logo">♫ SPOTIFY</div>
     </div>
 
     <script>
         const vscode = acquireVsCodeApi();
+
+        // Constants matching backend
+        const MAX_SKIP_COUNT = 50;
 
         const albumArt = document.getElementById('albumArt');
         const trackName = document.getElementById('trackName');
@@ -561,8 +773,14 @@
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
         const statusIndicator = document.getElementById('statusIndicator');
+        const queueToggleBtn = document.getElementById('queueToggleBtn');
+        const queueToggleText = document.getElementById('queueToggleText');
+        const queueContainer = document.getElementById('queueContainer');
+        const queueList = document.getElementById('queueList');
 
         let currentTrackData = null;
+        let queueData = null;
+        let isQueueVisible = false;
 
         playPauseBtn.addEventListener('click', () => {
             vscode.postMessage({ command: 'playPause' });
@@ -576,12 +794,32 @@
             vscode.postMessage({ command: 'next' });
         });
 
+        queueToggleBtn.addEventListener('click', () => {
+            isQueueVisible = !isQueueVisible;
+            if (isQueueVisible) {
+                queueContainer.classList.add('show');
+                queueToggleBtn.classList.add('active');
+                queueToggleText.textContent = 'Hide Queue';
+                // Request queue data when opening
+                vscode.postMessage({ command: 'getQueue' });
+            } else {
+                queueContainer.classList.remove('show');
+                queueToggleBtn.classList.remove('active');
+                queueToggleText.textContent = 'Show Queue';
+            }
+        });
+
         window.addEventListener('message', event => {
             const message = event.data;
             if (message.command === 'updateTrack') {
                 updateUI(message.data);
+            } else if (message.command === 'updateQueue') {
+                updateQueue(message.data);
             }
         });
+
+        // Placeholder SVG for when nothing is playing (file)
+        const placeholderSvg = 'assets/placeholder.svg';
 
         function updateUI(data) {
             currentTrackData = data;
@@ -589,7 +827,7 @@
             if (data.error || !data.track) {
                 trackName.textContent = data.artist || 'Spotify not detected';
                 artistName.textContent = data.album || 'Please make sure Spotify is running';
-                albumArt.src = '';
+                albumArt.src = placeholderSvg;
                 albumArt.classList.add('loading');
                 albumArt.classList.remove('playing');
                 progressFill.style.width = '0%';
@@ -634,6 +872,117 @@
             const minutes = Math.floor(totalSeconds / 60);
             const seconds = totalSeconds % 60;
             return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+        }
+
+        function isValidSpotifyImageUrl(url) {
+            // Validate that the URL is from Spotify's CDN
+            return url && (url.startsWith('https://i.scdn.co/') || url.startsWith('https://mosaic.scdn.co/'));
+        }
+
+        function updateQueue(data) {
+            queueData = data;
+            
+            if (data.error || !data.queue || data.queue.length === 0) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'queue-empty';
+                emptyDiv.textContent = data.error || 'Queue is empty';
+                queueList.replaceChildren(emptyDiv);
+                return;
+            }
+
+            // Clear existing queue items
+            queueList.replaceChildren();
+
+            data.queue.forEach((item, index) => {
+                const queueItem = document.createElement('div');
+                queueItem.className = 'queue-item';
+                queueItem.dataset.index = index;
+                queueItem.title = 'Click to skip to this track';
+
+                const indexDiv = document.createElement('div');
+                indexDiv.className = 'queue-item-index';
+                indexDiv.textContent = (index + 1).toString();
+
+                const artImg = document.createElement('img');
+                artImg.className = 'queue-item-art';
+                const albumArtUrl = item.albumArt || '';
+                if (isValidSpotifyImageUrl(albumArtUrl)) {
+                    artImg.src = albumArtUrl;
+                }
+                artImg.alt = item.name || 'Track';
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'queue-item-info';
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'queue-item-name';
+                nameDiv.textContent = item.name || 'Unknown Track';
+
+                const artistDiv = document.createElement('div');
+                artistDiv.className = 'queue-item-artist';
+                artistDiv.textContent = item.artist || 'Unknown Artist';
+
+                infoDiv.appendChild(nameDiv);
+                infoDiv.appendChild(artistDiv);
+
+                const durationDiv = document.createElement('div');
+                durationDiv.className = 'queue-item-duration';
+                durationDiv.textContent = formatTime(item.duration);
+
+                const playIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                playIcon.setAttribute('class', 'queue-item-play-icon');
+                playIcon.setAttribute('viewBox', '0 0 24 24');
+                playIcon.setAttribute('fill', 'currentColor');
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', 'M8 5v14l11-7z');
+                playIcon.appendChild(path);
+
+                queueItem.appendChild(indexDiv);
+                queueItem.appendChild(artImg);
+                queueItem.appendChild(infoDiv);
+                queueItem.appendChild(durationDiv);
+                queueItem.appendChild(playIcon);
+
+                queueItem.addEventListener('click', () => {
+                    const idx = parseInt(queueItem.dataset.index, 10);
+                    // Validate the parsed index
+                    if (isNaN(idx) || idx < 0) {
+                        console.error('Invalid queue index:', queueItem.dataset.index);
+                        return;
+                    }
+                    
+                    // Validate index is within queue bounds
+                    if (queueData && queueData.queue && idx >= queueData.queue.length) {
+                        console.error('Index exceeds queue length:', idx, 'Queue length:', queueData.queue.length);
+                        return;
+                    }
+                    
+                    // Get the track URI and build the queue URIs array
+                    const trackToPlay = queueData.queue[idx];
+                    const queueUris = [];
+                    
+                    // Add currently playing track if available
+                    if (queueData.currentlyPlaying && queueData.currentlyPlaying.uri) {
+                        queueUris.push(queueData.currentlyPlaying.uri);
+                    }
+                    
+                    // Add all queue tracks
+                    queueData.queue.forEach(track => {
+                        if (track.uri) {
+                            queueUris.push(track.uri);
+                        }
+                    });
+                    
+                    // Use the new playFromQueue command with track URI
+                    vscode.postMessage({ 
+                        command: 'playFromQueue', 
+                        trackUri: trackToPlay.uri,
+                        queueUris: queueUris
+                    });
+                });
+
+                queueList.appendChild(queueItem);
+            });
         }
 
         vscode.postMessage({ command: 'getCurrentTrack' });
