@@ -229,10 +229,23 @@ function createOrShowSpotifyWidget(context) {
                     try {
                         // Skip multiple times to reach the desired track
                         const skipCount = message.count || 1;
+                        
+                        // Validate skipCount is a positive integer
+                        if (!Number.isInteger(skipCount) || skipCount <= 0) {
+                            throw new Error('Invalid skip count');
+                        }
+                        
+                        // Limit maximum skips to prevent abuse
+                        const maxSkips = 50;
+                        if (skipCount > maxSkips) {
+                            throw new Error(`Cannot skip more than ${maxSkips} tracks at once`);
+                        }
+                        
                         for (let i = 0; i < skipCount; i++) {
                             await skipToNext();
-                            // Small delay between skips to avoid rate limiting
-                            await new Promise(resolve => setTimeout(resolve, 100));
+                            // Delay between skips to avoid rate limiting
+                            // Wait longer after each skip to be safe
+                            await new Promise(resolve => setTimeout(resolve, 300));
                         }
                         // Refresh both track and queue after skipping
                         const newTrackInfo = await getCurrentTrack();

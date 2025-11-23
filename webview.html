@@ -846,42 +846,75 @@
             queueData = data;
             
             if (data.error || !data.queue || data.queue.length === 0) {
-                queueList.innerHTML = '<div class="queue-empty">Queue is empty</div>';
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'queue-empty';
+                emptyDiv.textContent = data.error || 'Queue is empty';
+                queueList.innerHTML = '';
+                queueList.appendChild(emptyDiv);
                 return;
             }
 
-            let queueHTML = '';
+            // Clear existing queue items
+            queueList.innerHTML = '';
+
             data.queue.forEach((item, index) => {
-                queueHTML += `
-                    <div class="queue-item" data-index="${index}" title="Click to skip to this track">
-                        <div class="queue-item-index">${index + 1}</div>
-                        <img class="queue-item-art" src="${item.albumArt || ''}" alt="${item.name}">
-                        <div class="queue-item-info">
-                            <div class="queue-item-name">${item.name}</div>
-                            <div class="queue-item-artist">${item.artist}</div>
-                        </div>
-                        <div class="queue-item-duration">${formatTime(item.duration)}</div>
-                        <svg class="queue-item-play-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M8 5v14l11-7z"/>
-                        </svg>
-                    </div>
-                `;
-            });
+                const queueItem = document.createElement('div');
+                queueItem.className = 'queue-item';
+                queueItem.dataset.index = index;
+                queueItem.title = 'Click to skip to this track';
 
-            queueList.innerHTML = queueHTML;
+                const indexDiv = document.createElement('div');
+                indexDiv.className = 'queue-item-index';
+                indexDiv.textContent = (index + 1).toString();
 
-            // Add click handlers to queue items
-            const queueItems = queueList.querySelectorAll('.queue-item');
-            queueItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    const index = parseInt(item.dataset.index);
+                const artImg = document.createElement('img');
+                artImg.className = 'queue-item-art';
+                artImg.src = item.albumArt || '';
+                artImg.alt = item.name || 'Track';
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'queue-item-info';
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'queue-item-name';
+                nameDiv.textContent = item.name || 'Unknown Track';
+
+                const artistDiv = document.createElement('div');
+                artistDiv.className = 'queue-item-artist';
+                artistDiv.textContent = item.artist || 'Unknown Artist';
+
+                infoDiv.appendChild(nameDiv);
+                infoDiv.appendChild(artistDiv);
+
+                const durationDiv = document.createElement('div');
+                durationDiv.className = 'queue-item-duration';
+                durationDiv.textContent = formatTime(item.duration);
+
+                const playIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                playIcon.setAttribute('class', 'queue-item-play-icon');
+                playIcon.setAttribute('viewBox', '0 0 24 24');
+                playIcon.setAttribute('fill', 'currentColor');
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', 'M8 5v14l11-7z');
+                playIcon.appendChild(path);
+
+                queueItem.appendChild(indexDiv);
+                queueItem.appendChild(artImg);
+                queueItem.appendChild(infoDiv);
+                queueItem.appendChild(durationDiv);
+                queueItem.appendChild(playIcon);
+
+                queueItem.addEventListener('click', () => {
+                    const idx = parseInt(queueItem.dataset.index);
                     // Skip to this track by skipping (index + 1) times
                     // +1 because we need to skip past the current track
                     vscode.postMessage({ 
                         command: 'skipTracks', 
-                        count: index + 1 
+                        count: idx + 1 
                     });
                 });
+
+                queueList.appendChild(queueItem);
             });
         }
 
