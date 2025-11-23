@@ -15,6 +15,7 @@ A beautiful Spotify player widget for Visual Studio Code that displays your curr
 - 🖼️ Album artwork display
 - 🔄 Fast auto-refresh (1 second updates)
 - 🔐 Secure PKCE authentication
+- 📋 Queue management - view, navigate, and skip to any track in your queue
 
 ## Setup Instructions
 
@@ -52,6 +53,34 @@ A beautiful Spotify player widget for Visual Studio Code that displays your curr
 - `Spotify Widget: Authenticate with Spotify` - Log in to your Spotify account
 - `Spotify Widget: Show` - Show the Spotify widget panel
 - `Spotify Widget: Hide` - Hide the Spotify widget panel
+
+## Using Queue Management
+
+The queue feature allows you to view and interact with your Spotify playback queue, similar to the Spotify mobile app:
+
+### Features
+1. **View Queue**: Click the "Show Queue" button (with music list icon) below the playback controls to reveal your upcoming tracks
+2. **Skip to Track**: Click on any track in the queue to skip directly to it - the extension will automatically skip the necessary number of tracks
+3. **Queue Display**: Each track in the queue shows:
+   - Position number
+   - Album artwork (40x40)
+   - Track name and artist
+   - Track duration
+   - Play icon on hover
+4. **Hide Queue**: Click "Hide Queue" to collapse the queue view and save space
+
+### Visual Design
+- Smooth animations when expanding/collapsing
+- Scrollable list for long queues (up to 400px)
+- Spotify green (#1db954) accent color on hover
+- Dark theme matching the main player
+- Glassmorphism effects consistent with the widget design
+
+### Notes
+- Queue updates automatically when you skip tracks
+- Maximum of 50 tracks can be skipped at once for safety
+- 300ms delay between skips to respect Spotify API rate limits
+- Queue operations require an active Spotify session
 
 ## Configuration
 
