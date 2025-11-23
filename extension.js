@@ -281,7 +281,7 @@ function spotifyApiRequest(path, method = 'GET', body = null) {
         };
 
         const req = https.request(options, (res) => {
-            if (res.statusCode === 204) {
+            if (res.statusCode === 204 || res.statusCode === 202) {
                 resolve(null);
                 return;
             }
@@ -295,8 +295,6 @@ function spotifyApiRequest(path, method = 'GET', body = null) {
                     } catch {
                         reject(new Error('Failed to parse response'));
                     }
-                } else if (res.statusCode === 202) {
-                    resolve(null);
                 } else {
                     reject(new Error(`${res.statusCode}: ${data}`));
                 }
@@ -330,127 +328,38 @@ function createEmptyTrackInfo(artist, album) {
 }
 
 async function sendSpotifyCommand(command) {
-    const platform = process.platform;
-    let success = false;
-
-    // Try platform-specific media key control first
-    try {
-        success = await sendPlatformMediaKey(command, platform);
-    } catch (error) {
-        console.log(`Platform media key failed: ${error.message}`);
-    }
-
-    // Fallback to Spotify Web API if platform-specific control failed
-    if (!success) {
-        try {
-            await sendSpotifyWebApiCommand(command);
-            console.log(`Command ${command} sent via Spotify Web API`);
-        } catch (error) {
-            console.error('Spotify Web API command failed:', error);
-            vscode.window.showErrorMessage('Failed to control Spotify. Make sure Spotify is running and you are authenticated.');
-        }
-    }
-}
-
-async function sendPlatformMediaKey(command, platform) {
-    return new Promise((resolve, reject) => {
-        const { exec } = require('child_process');
-        let cmd = null;
-
-        if (platform === 'win32') {
-            // Windows: Use PowerShell to send media keys
-            const psCommands = {
-                'PlayPause': `(New-Object -ComObject WScript.Shell).SendKeys([char]179)`,
-                'Next': `(New-Object -ComObject WScript.Shell).SendKeys([char]176)`,
-                'Previous': `(New-Object -ComObject WScript.Shell).SendKeys([char]177)`
-            };
-            cmd = `powershell -command "${psCommands[command]}"`;
-        } else if (platform === 'darwin') {
-            // macOS: Use AppleScript to control Spotify
-            const appleScriptCommands = {
-                'PlayPause': 'tell application "Spotify" to playpause',
-                'Next': 'tell application "Spotify" to next track',
-                'Previous': 'tell application "Spotify" to previous track'
-            };
-            cmd = `osascript -e '${appleScriptCommands[command]}'`;
-        } else if (platform === 'linux') {
-            // Linux: Try playerctl first, fallback to dbus-send
-            const playerctlCommands = {
-                'PlayPause': 'playerctl -p spotify play-pause',
-                'Next': 'playerctl -p spotify next',
-                'Previous': 'playerctl -p spotify previous'
-            };
-            cmd = playerctlCommands[command];
-            
-            // Try playerctl first
-            exec(cmd, (error) => {
-                if (error) {
-                    // Fallback to dbus-send for MPRIS
-                    const dbusCommands = {
-                        'PlayPause': 'dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause',
-                        'Next': 'dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next',
-                        'Previous': 'dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Previous'
-                    };
-                    exec(dbusCommands[command], (dbusError) => {
-                        if (dbusError) {
-                            reject(new Error('Both playerctl and dbus-send failed'));
-                        } else {
-                            console.log(`Command ${command} sent via dbus-send`);
-                            resolve(true);
-                        }
-                    });
-                } else {
-                    console.log(`Command ${command} sent via playerctl`);
-                    resolve(true);
-                }
-            });
-            return; // Return early for Linux to avoid executing cmd below
-        } else {
-            reject(new Error(`Unsupported platform: ${platform}`));
-            return;
-        }
-
-        // Execute command for Windows and macOS
-        if (cmd) {
-            exec(cmd, (error) => {
-                if (error) {
-                    console.error(`Error sending ${platform} media key: ${error.message}`);
-                    reject(error);
-                } else {
-                    console.log(`Command ${command} sent via ${platform} media key`);
-                    resolve(true);
-                }
-            });
-        }
-    });
-}
-
-async function sendSpotifyWebApiCommand(command) {
     if (!accessToken) {
-        throw new Error('Not authenticated with Spotify');
+        vscode.window.showErrorMessage('Not authenticated with Spotify. Please run "Authenticate with Spotify" command.');
+        return;
     }
 
-    const apiEndpoints = {
-        'Next': '/v1/me/player/next',
-        'Previous': '/v1/me/player/previous'
-    };
+    try {
+        const apiEndpoints = {
+            'Next': { path: '/v1/me/player/next', method: 'POST' },
+            'Previous': { path: '/v1/me/player/previous', method: 'POST' }
+        };
 
-    // For PlayPause, we need to check current state first
-    if (command === 'PlayPause') {
-        try {
-            const currentState = await spotifyApiRequest('/v1/me/player/currently-playing');
-            if (currentState && currentState.is_playing) {
-                await spotifyApiRequest('/v1/me/player/pause', 'PUT');
-            } else {
+        // For PlayPause, we need to check current state first
+        if (command === 'PlayPause') {
+            try {
+                const currentState = await spotifyApiRequest('/v1/me/player/currently-playing');
+                if (currentState && currentState.is_playing) {
+                    await spotifyApiRequest('/v1/me/player/pause', 'PUT');
+                } else {
+                    await spotifyApiRequest('/v1/me/player/play', 'PUT');
+                }
+            } catch (error) {
+                // If we can't get current state, default to play
+                console.log(`Could not determine playback state: ${error.message}`);
                 await spotifyApiRequest('/v1/me/player/play', 'PUT');
             }
-        } catch (error) {
-            // If we can't get current state, default to play
-            console.log(`Could not determine playback state: ${error.message}`);
-            await spotifyApiRequest('/v1/me/player/play', 'PUT');
+        } else if (apiEndpoints[command]) {
+            const endpoint = apiEndpoints[command];
+            await spotifyApiRequest(endpoint.path, endpoint.method);
         }
-    } else {
-        await spotifyApiRequest(apiEndpoints[command], 'POST');
+    } catch (error) {
+        console.error('Spotify command failed:', error);
+        vscode.window.showErrorMessage('Failed to control Spotify. Make sure Spotify is running and you are authenticated.');
     }
 }
 

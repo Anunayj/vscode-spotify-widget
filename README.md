@@ -11,8 +11,7 @@ A beautiful Spotify player widget for Visual Studio Code that displays your curr
 - 🎵 Real-time display of currently playing track
 - 🎨 Spotify mobile app-inspired design
 - ⏯️ Cross-platform playback controls (Play/Pause, Next, Previous)
-- 🖥️ Native media key support for Windows, macOS, and Linux
-- 🌐 Automatic fallback to Spotify Web API
+- 🌐 Spotify Web API integration for reliable playback control
 - 📊 Progress bar with time display
 - 🖼️ Album artwork display
 - 🔄 Fast auto-refresh (1 second updates)
@@ -98,8 +97,7 @@ A beautiful Spotify player widget for Visual Studio Code that displays your curr
 
 ## Known Limitations
 - Track information updates may have a slight delay
-- Playback controls work best when Spotify desktop app is running
-- On Linux, requires either `playerctl` or `dbus-send` for local media control (otherwise uses Web API)
+- Playback controls require an active Spotify session (via app or web player)
 
 ## Development
 To work on this extension:
