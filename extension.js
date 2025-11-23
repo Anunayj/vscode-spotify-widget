@@ -12,7 +12,11 @@ function getClientId() {
     return config.get('clientId', '');
 }
 
-const REDIRECT_URI = 'https://itsnotalexy.github.io/vscode-spotify-widget-auth/callback';
+function getRedirectUri() {
+    const config = vscode.workspace.getConfiguration('spotifyWidget');
+    return config.get('callbackUrl', 'https://anunayj.github.io/vscode-spotify-widget-auth/');
+}
+
 const SCOPES = 'user-read-playback-state user-modify-playback-state user-read-currently-playing';
 
 function activate(context) {
@@ -54,12 +58,13 @@ async function authenticateSpotify(context) {
         }
         return;
     }
+    const redirectUri = getRedirectUri();
     const codeVerifier = generateRandomString(128);
     const codeChallenge = await generateCodeChallenge(codeVerifier);
     const authUrl = `https://accounts.spotify.com/authorize?` +
         `client_id=${clientId}&` +
         `response_type=code&` +
-        `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
+        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
         `scope=${encodeURIComponent(SCOPES)}&` +
         `code_challenge_method=S256&` +
         `code_challenge=${codeChallenge}&` +
@@ -120,11 +125,12 @@ function base64URLEncode(buffer) {
 
 function exchangeCodeForToken(code, codeVerifier, clientId) {
     return new Promise((resolve, reject) => {
+        const redirectUri = getRedirectUri();
         const postData = new URLSearchParams({
             client_id: clientId,
             grant_type: 'authorization_code',
             code: code,
-            redirect_uri: REDIRECT_URI,
+            redirect_uri: redirectUri,
             code_verifier: codeVerifier
         }).toString();
 
