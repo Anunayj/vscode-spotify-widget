@@ -18,6 +18,9 @@ suite('Extension Test Suite', () => {
 	});
 
 	test('Commands should be registered', async () => {
+		// Give extension time to fully activate and register commands
+		await new Promise(resolve => setTimeout(resolve, 100));
+		
 		const commands = await vscode.commands.getCommands(true);
 		assert.ok(commands.includes('spotify-widget.authenticate'));
 		assert.ok(commands.includes('spotify-widget.show'));
