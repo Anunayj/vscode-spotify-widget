@@ -230,6 +230,34 @@ function createOrShowSpotifyWidget(context) {
                         vscode.window.showErrorMessage('Failed to skip track: ' + error.message);
                     }
                     break;
+                case 'playFromQueue':
+                    try {
+                        const { trackUri, queueUris } = message;
+                        
+                        if (!trackUri || !queueUris || !Array.isArray(queueUris)) {
+                            throw new Error('Invalid parameters for playFromQueue');
+                        }
+                        
+                        await playTrackFromQueue(trackUri, queueUris);
+                        
+                        // Small delay to let Spotify update
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        
+                        // Refresh both track and queue after playing
+                        const newTrackInfo = await getCurrentTrack();
+                        const newQueueData = await getQueue();
+                        spotifyPanel.webview.postMessage({
+                            command: 'updateTrack',
+                            data: newTrackInfo
+                        });
+                        spotifyPanel.webview.postMessage({
+                            command: 'updateQueue',
+                            data: newQueueData
+                        });
+                    } catch (error) {
+                        vscode.window.showErrorMessage('Failed to play track from queue: ' + error.message);
+                    }
+                    break;
                 case 'skipTracks':
                     try {
                         // Skip multiple times to reach the desired track
@@ -358,9 +386,15 @@ function spotifyApiRequest(path, method = 'GET', postData = null) {
             res.on('end', () => {
                 if (res.statusCode === 200) {
                     try {
+                        // Handle empty response body
+                        if (!data || data.trim() === '') {
+                            resolve(null);
+                            return;
+                        }
                         resolve(JSON.parse(data));
-                    } catch {
-                        reject(new Error('Failed to parse response'));
+                    } catch (parseError) {
+                        console.error('Failed to parse Spotify API response:', data);
+                        reject(new Error(`Failed to parse response: ${parseError.message}`));
                     }
                 } else {
                     reject(new Error(`${res.statusCode}: ${data}`));
@@ -444,6 +478,27 @@ async function skipToNext() {
         await spotifyApiRequest('/v1/me/player/next', 'POST');
     } catch (error) {
         console.error('Error skipping to next:', error);
+        throw error;
+    }
+}
+
+async function playTrackFromQueue(trackUri, queueUris) {
+    if (!accessToken) {
+        throw new Error('Not authenticated');
+    }
+    
+    try {
+        // Use the start/resume playback endpoint to play from a specific position in queue
+        const body = {
+            uris: queueUris,
+            offset: {
+                uri: trackUri
+            }
+        };
+        
+        await spotifyApiRequest('/v1/me/player/play', 'PUT', body);
+    } catch (error) {
+        console.error('Error playing track from queue:', error);
         throw error;
     }
 }

@@ -20,8 +20,9 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            align-items: flex-start;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         body::before {
@@ -515,21 +516,6 @@
             justify-content: center;
             gap: 8px;
             margin: 20px 0 15px 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .queue-toggle-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.4s ease, height 0.4s ease;
         }
 
         .queue-toggle-btn:hover {
@@ -539,26 +525,14 @@
             transform: scale(1.05);
         }
 
-        .queue-toggle-btn:hover::before {
-            width: 100%;
-            height: 100%;
-        }
-
         .queue-toggle-btn:active {
             transform: scale(0.98);
-        }
-
-        .queue-toggle-btn span {
-            position: relative;
-            z-index: 1;
         }
 
         .queue-toggle-btn svg {
             width: 18px;
             height: 18px;
             transition: transform 0.3s ease;
-            position: relative;
-            z-index: 1;
         }
 
         .queue-toggle-btn.active svg {
@@ -959,19 +933,27 @@
                         return;
                     }
                     
-                    // The currently playing track is not in the queue array.
-                    // Queue[0] is the next track. To play queue[idx], we skip (idx + 1) times.
-                    // Example: to play queue[0], skip 1 time; to play queue[2], skip 3 times.
-                    // Ensure we don't exceed MAX_SKIP_COUNT
-                    const skipCount = Math.min(idx + 1, MAX_SKIP_COUNT);
+                    // Get the track URI and build the queue URIs array
+                    const trackToPlay = queueData.queue[idx];
+                    const queueUris = [];
                     
-                    if (skipCount !== idx + 1) {
-                        console.warn(`Capping skip count to ${MAX_SKIP_COUNT} (requested ${idx + 1})`);
+                    // Add currently playing track if available
+                    if (queueData.currentlyPlaying && queueData.currentlyPlaying.uri) {
+                        queueUris.push(queueData.currentlyPlaying.uri);
                     }
                     
+                    // Add all queue tracks
+                    queueData.queue.forEach(track => {
+                        if (track.uri) {
+                            queueUris.push(track.uri);
+                        }
+                    });
+                    
+                    // Use the new playFromQueue command with track URI
                     vscode.postMessage({ 
-                        command: 'skipTracks', 
-                        count: skipCount
+                        command: 'playFromQueue', 
+                        trackUri: trackToPlay.uri,
+                        queueUris: queueUris
                     });
                 });
 
