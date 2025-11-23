@@ -295,7 +295,7 @@ function spotifyApiRequest(path, method = 'GET', body = null) {
                     } catch {
                         reject(new Error('Failed to parse response'));
                     }
-                } else if (res.statusCode === 204 || res.statusCode === 202) {
+                } else if (res.statusCode === 202) {
                     resolve(null);
                 } else {
                     reject(new Error(`${res.statusCode}: ${data}`));
@@ -431,7 +431,6 @@ async function sendSpotifyWebApiCommand(command) {
     }
 
     const apiEndpoints = {
-        'PlayPause': '/v1/me/player/play', // Will be dynamically determined
         'Next': '/v1/me/player/next',
         'Previous': '/v1/me/player/previous'
     };
@@ -445,8 +444,9 @@ async function sendSpotifyWebApiCommand(command) {
             } else {
                 await spotifyApiRequest('/v1/me/player/play', 'PUT');
             }
-        } catch {
-            // If we can't get current state, try play
+        } catch (error) {
+            // If we can't get current state, default to play
+            console.log(`Could not determine playback state: ${error.message}`);
             await spotifyApiRequest('/v1/me/player/play', 'PUT');
         }
     } else {
