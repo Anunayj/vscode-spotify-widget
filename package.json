@@ -52,7 +52,7 @@
         "spotifyWidget.clientId": {
           "type": "string",
           "default": "2bad29833ad7469c9ab0273b951aeee8",
-          "description": "Your Spotify Application Client ID (get from https://developer.spotify.com/dashboard)",
+          "description": "Your Spotify Application Client ID (default provided, or get your own from https://developer.spotify.com/dashboard)",
           "order": 1
         },
         "spotifyWidget.callbackUrl": {
