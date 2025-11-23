@@ -243,9 +243,10 @@ function createOrShowSpotifyWidget(context) {
                         
                         for (let i = 0; i < skipCount; i++) {
                             await skipToNext();
-                            // Delay between skips to avoid rate limiting
-                            // Wait longer after each skip to be safe
-                            await new Promise(resolve => setTimeout(resolve, 300));
+                            // Delay between skips (but not after the last one) to avoid rate limiting
+                            if (i < skipCount - 1) {
+                                await new Promise(resolve => setTimeout(resolve, 300));
+                            }
                         }
                         // Refresh both track and queue after skipping
                         const newTrackInfo = await getCurrentTrack();

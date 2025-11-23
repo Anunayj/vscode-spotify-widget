@@ -906,8 +906,9 @@
 
                 queueItem.addEventListener('click', () => {
                     const idx = parseInt(queueItem.dataset.index);
-                    // Skip to this track by skipping (index + 1) times
-                    // +1 because we need to skip past the current track
+                    // Queue[0] is the next track to play, so to play queue[idx],
+                    // we need to skip (idx + 1) times: once to get to queue[0],
+                    // then idx more times to reach queue[idx]
                     vscode.postMessage({ 
                         command: 'skipTracks', 
                         count: idx + 1 
