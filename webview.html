@@ -732,6 +732,9 @@
     <script>
         const vscode = acquireVsCodeApi();
 
+        // Constants matching backend
+        const MAX_SKIP_COUNT = 50;
+
         const albumArt = document.getElementById('albumArt');
         const trackName = document.getElementById('trackName');
         const artistName = document.getElementById('artistName');
@@ -918,12 +921,26 @@
                         console.error('Invalid queue index:', queueItem.dataset.index);
                         return;
                     }
+                    
+                    // Validate index is within queue bounds
+                    if (queueData && queueData.queue && idx >= queueData.queue.length) {
+                        console.error('Index exceeds queue length:', idx, 'Queue length:', queueData.queue.length);
+                        return;
+                    }
+                    
                     // The currently playing track is not in the queue array.
                     // Queue[0] is the next track. To play queue[idx], we skip (idx + 1) times.
                     // Example: to play queue[0], skip 1 time; to play queue[2], skip 3 times.
+                    // Ensure we don't exceed MAX_SKIP_COUNT
+                    const skipCount = Math.min(idx + 1, MAX_SKIP_COUNT);
+                    
+                    if (skipCount !== idx + 1) {
+                        console.warn(`Capping skip count to ${MAX_SKIP_COUNT} (requested ${idx + 1})`);
+                    }
+                    
                     vscode.postMessage({ 
                         command: 'skipTracks', 
-                        count: idx + 1 
+                        count: skipCount
                     });
                 });
 

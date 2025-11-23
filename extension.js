@@ -237,7 +237,7 @@ function createOrShowSpotifyWidget(context) {
                         
                         // Validate skipCount is a safe positive integer
                         if (typeof skipCount !== 'number' || !Number.isSafeInteger(skipCount) || skipCount <= 0) {
-                            throw new Error('Invalid skip count: must be a positive integer');
+                            throw new Error('Invalid skip count: must be a positive integer greater than zero');
                         }
                         
                         // Limit maximum skips to prevent abuse
