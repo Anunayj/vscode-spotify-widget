@@ -1,0 +1,87 @@
+name: Build Multi-Platform Extension
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win32
+            arch: x64
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+          - os: macos-latest
+            platform: darwin
+            arch: x64
+          - os: macos-latest
+            platform: darwin
+            arch: arm64
+    
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    # Windows-specific setup for robotjs
+    - name: Install Windows build tools
+      if: runner.os == 'Windows'
+      run: |
+        npm install --global --production windows-build-tools
+      shell: powershell
+      continue-on-error: true
+    
+    # macOS-specific setup for robotjs
+    - name: Install macOS dependencies
+      if: runner.os == 'macOS'
+      run: |
+        # Xcode Command Line Tools are pre-installed on GitHub Actions macOS runners
+        echo "Xcode Command Line Tools already available"
+    
+    # Linux-specific setup for robotjs
+    - name: Install Linux dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libxtst-dev libpng++-dev
+    
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run linter
+      run: npm run lint
+      
+    - name: Run tests
+      run: |
+        xvfb-run -a npm test
+      if: runner.os == 'Linux'
+      
+    - name: Install vsce
+      run: npm install -g @vscode/vsce
+      
+    - name: Package extension
+      run: |
+        vsce package --target ${{ matrix.platform }}-${{ matrix.arch }}
+        
+    - name: Upload VSIX artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: vscode-spotify-widget-${{ matrix.platform }}-${{ matrix.arch }}
+        path: '*.vsix'
+        retention-days: 30

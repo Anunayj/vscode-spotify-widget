@@ -102,11 +102,29 @@ A beautiful Spotify player widget for Visual Studio Code that displays your curr
 - Native media key support (robotjs) requires native compilation during install and may not work on headless systems or some Linux distributions; automatically falls back to Web API if unavailable
 
 ## Development
-To work on this extension:
+
+### Working on the Extension
 1. Clone the repository
-2. Run `npm install`
-3. Press `F5` to start debugging
-4. The Extension Development Host will open with the extension loaded
+2. Install platform-specific dependencies for robotjs (optional but recommended):
+   - **Windows**: `npm install --global --production windows-build-tools` (from elevated PowerShell)
+   - **macOS**: Xcode Command Line Tools (pre-installed on most systems)
+   - **Linux**: `sudo apt-get install libxtst-dev libpng++-dev`
+3. Run `npm install`
+4. Press `F5` to start debugging
+5. The Extension Development Host will open with the extension loaded
+
+### Building Platform-Specific Packages
+The extension uses platform-specific native modules (robotjs) for optimal performance. Multi-platform VSIX packages are automatically built by GitHub Actions:
+- Windows (x64)
+- macOS (x64 and ARM64)
+- Linux (x64)
+
+To build locally for your platform:
+```bash
+npm install -g @vscode/vsce
+vsce package --target <platform>-<arch>
+# Examples: win32-x64, darwin-x64, darwin-arm64, linux-x64
+```
 
 ## Contributing
 
