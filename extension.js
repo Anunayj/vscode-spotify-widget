@@ -1,5 +1,6 @@
 const vscode = require('vscode');
 const https = require('https');
+const path = require('path');
 let spotifyPanel = null;
 let updateInterval = null;
 let accessToken = null;
@@ -175,7 +176,7 @@ function createOrShowSpotifyWidget(context) {
         {
             enableScripts: true,
             retainContextWhenHidden: true,
-            localResourceRoots: []
+            localResourceRoots: [vscode.Uri.file(path.join(__dirname, 'assets'))]
         }
     );
 
@@ -345,9 +346,24 @@ async function sendSpotifyCommand(command) {
 
 function getWebviewContent() {
     const fs = require('fs');
-    const path = require('path');
     const htmlPath = path.join(__dirname, 'webview.html');
-    return fs.readFileSync(htmlPath, 'utf8');
+    let html = fs.readFileSync(htmlPath, 'utf8');
+
+    // If a webview panel exists, convert the local asset path to a webview URI
+    try {
+        const placeholderPath = path.join(__dirname, 'assets', 'placeholder.svg');
+        const placeholderUri = spotifyPanel
+            ? spotifyPanel.webview.asWebviewUri(vscode.Uri.file(placeholderPath)).toString()
+            : '';
+
+        if (placeholderUri) {
+            html = html.replace("const placeholderSvg = 'assets/placeholder.svg';", `const placeholderSvg = '${placeholderUri}';`);
+        }
+    } catch (e) {
+        console.error('Failed to convert placeholder path to webview URI:', e);
+    }
+
+    return html;
 }
 
 function deactivate() {
