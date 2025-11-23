@@ -797,13 +797,16 @@
             }
         });
 
+        // Placeholder SVG for when nothing is playing (file)
+        const placeholderSvg = 'assets/placeholder.svg';
+
         function updateUI(data) {
             currentTrackData = data;
 
             if (data.error || !data.track) {
                 trackName.textContent = data.artist || 'Spotify not detected';
                 artistName.textContent = data.album || 'Please make sure Spotify is running';
-                albumArt.src = '';
+                albumArt.src = placeholderSvg;
                 albumArt.classList.add('loading');
                 albumArt.classList.remove('playing');
                 progressFill.style.width = '0%';
