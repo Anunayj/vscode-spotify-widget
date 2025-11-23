@@ -551,6 +551,8 @@
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
         }
 
         .queue-container.show {
@@ -559,6 +561,7 @@
             overflow-x: hidden;
             overscroll-behavior: contain;
             padding-right: 4px;
+            scrollbar-width: none; /* Firefox */
         }
 
         .queue-container::-webkit-scrollbar {
