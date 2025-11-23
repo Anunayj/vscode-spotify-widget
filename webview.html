@@ -583,13 +583,37 @@
             }
         });
 
+        // Placeholder SVG for when nothing is playing
+        const placeholderSvg = `data:image/svg+xml,${encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+                <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#1db954;stop-opacity:0.3"/>
+                        <stop offset="100%" style="stop-color:#1ed760;stop-opacity:0.3"/>
+                    </linearGradient>
+                </defs>
+                <rect width="200" height="200" fill="#2a2a2a"/>
+                <circle cx="100" cy="100" r="70" fill="url(#gradient)"/>
+                <g transform="translate(100, 100)">
+                    <path d="M -15 -30 Q -15 -35 -10 -35 L 10 -35 Q 15 -35 15 -30 L 15 30 Q 15 35 10 35 L -10 35 Q -15 35 -15 30 Z" 
+                          fill="#1db954" opacity="0.9"/>
+                    <circle cx="15" cy="-40" r="18" fill="#1db954" opacity="0.9"/>
+                    <circle cx="-15" cy="-30" r="15" fill="#1db954" opacity="0.9"/>
+                    <path d="M -8 -15 L -8 8 M -8 8 Q -8 12 -12 12 Q -16 12 -16 8 Q -16 4 -12 4 Q -8 4 -8 8" 
+                          stroke="#1db954" stroke-width="2.5" fill="none" opacity="0.9"/>
+                    <path d="M 8 -25 L 8 8 M 8 8 Q 8 12 4 12 Q 0 12 0 8 Q 0 4 4 4 Q 8 4 8 8" 
+                          stroke="#1db954" stroke-width="2.5" fill="none" opacity="0.9"/>
+                </g>
+            </svg>
+        `)}`;
+
         function updateUI(data) {
             currentTrackData = data;
 
             if (data.error || !data.track) {
                 trackName.textContent = data.artist || 'Spotify not detected';
                 artistName.textContent = data.album || 'Please make sure Spotify is running';
-                albumArt.src = '';
+                albumArt.src = placeholderSvg;
                 albumArt.classList.add('loading');
                 albumArt.classList.remove('playing');
                 progressFill.style.width = '0%';
