@@ -281,6 +281,7 @@ function spotifyApiRequest(path, method = 'GET', body = null) {
         };
 
         const req = https.request(options, (res) => {
+            // 204 No Content and 202 Accepted are success codes for Spotify playback API
             if (res.statusCode === 204 || res.statusCode === 202) {
                 resolve(null);
                 return;
@@ -349,9 +350,14 @@ async function sendSpotifyCommand(command) {
                     await spotifyApiRequest('/v1/me/player/play', 'PUT');
                 }
             } catch (error) {
-                // If we can't get current state, default to play
-                console.log(`Could not determine playback state: ${error.message}`);
-                await spotifyApiRequest('/v1/me/player/play', 'PUT');
+                // If current state check fails, try toggling via pause (safer fallback)
+                console.log(`Could not determine playback state: ${error.message}, attempting pause`);
+                try {
+                    await spotifyApiRequest('/v1/me/player/pause', 'PUT');
+                } catch {
+                    // If pause also fails, try play as last resort
+                    await spotifyApiRequest('/v1/me/player/play', 'PUT');
+                }
             }
         } else if (apiEndpoints[command]) {
             const endpoint = apiEndpoints[command];
