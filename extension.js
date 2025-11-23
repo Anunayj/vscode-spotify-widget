@@ -276,7 +276,7 @@ function createOrShowSpotifyWidget(context) {
     const refreshInterval = config.get('refreshInterval', 1000); 
 
     updateInterval = setInterval(async () => {
-        if (spotifyPanel) {
+        if (spotifyPanel && spotifyPanel.webview) {
             const trackInfo = await getCurrentTrack();
             spotifyPanel.webview.postMessage({
                 command: 'updateTrack',
@@ -286,11 +286,11 @@ function createOrShowSpotifyWidget(context) {
     }, refreshInterval);
     spotifyPanel.onDidDispose(
         () => {
-            spotifyPanel = null;
             if (updateInterval) {
                 clearInterval(updateInterval);
                 updateInterval = null;
             }
+            spotifyPanel = null;
         },
         null,
         context.subscriptions
