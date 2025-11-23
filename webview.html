@@ -869,7 +869,11 @@
 
                 const artImg = document.createElement('img');
                 artImg.className = 'queue-item-art';
-                artImg.src = item.albumArt || '';
+                // Validate that the URL is from Spotify's CDN
+                const albumArtUrl = item.albumArt || '';
+                if (albumArtUrl && (albumArtUrl.startsWith('https://i.scdn.co/') || albumArtUrl.startsWith('https://mosaic.scdn.co/'))) {
+                    artImg.src = albumArtUrl;
+                }
                 artImg.alt = item.name || 'Track';
 
                 const infoDiv = document.createElement('div');
@@ -905,7 +909,12 @@
                 queueItem.appendChild(playIcon);
 
                 queueItem.addEventListener('click', () => {
-                    const idx = parseInt(queueItem.dataset.index);
+                    const idx = parseInt(queueItem.dataset.index, 10);
+                    // Validate the parsed index
+                    if (isNaN(idx) || idx < 0) {
+                        console.error('Invalid queue index:', queueItem.dataset.index);
+                        return;
+                    }
                     // Queue[0] is the next track to play, so to play queue[idx],
                     // we need to skip (idx + 1) times: once to get to queue[0],
                     // then idx more times to reach queue[idx]

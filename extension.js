@@ -403,25 +403,25 @@ async function getQueue() {
         }
         
         // Format the queue data for the webview
-        const queue = data.queue.map(item => ({
-            id: item.id,
-            name: item.name,
-            artist: item.artists.map(a => a.name).join(', '),
-            album: item.album.name,
-            albumArt: item.album.images[0]?.url || '',
-            duration: item.duration_ms,
-            uri: item.uri
-        }));
+        const queue = data.queue ? data.queue.map(item => ({
+            id: item.id || '',
+            name: item.name || 'Unknown Track',
+            artist: item.artists?.map(a => a.name).join(', ') || 'Unknown Artist',
+            album: item.album?.name || 'Unknown Album',
+            albumArt: item.album?.images?.[0]?.url || '',
+            duration: item.duration_ms || 0,
+            uri: item.uri || ''
+        })) : [];
         
         return {
             currentlyPlaying: data.currently_playing ? {
-                id: data.currently_playing.id,
-                name: data.currently_playing.name,
-                artist: data.currently_playing.artists.map(a => a.name).join(', '),
-                album: data.currently_playing.album.name,
-                albumArt: data.currently_playing.album.images[0]?.url || '',
-                duration: data.currently_playing.duration_ms,
-                uri: data.currently_playing.uri
+                id: data.currently_playing.id || '',
+                name: data.currently_playing.name || 'Unknown Track',
+                artist: data.currently_playing.artists?.map(a => a.name).join(', ') || 'Unknown Artist',
+                album: data.currently_playing.album?.name || 'Unknown Album',
+                albumArt: data.currently_playing.album?.images?.[0]?.url || '',
+                duration: data.currently_playing.duration_ms || 0,
+                uri: data.currently_playing.uri || ''
             } : null,
             queue: queue
         };
