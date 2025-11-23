@@ -842,6 +842,11 @@
             return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
         }
 
+        function isValidSpotifyImageUrl(url) {
+            // Validate that the URL is from Spotify's CDN
+            return url && (url.startsWith('https://i.scdn.co/') || url.startsWith('https://mosaic.scdn.co/'));
+        }
+
         function updateQueue(data) {
             queueData = data;
             
@@ -849,13 +854,12 @@
                 const emptyDiv = document.createElement('div');
                 emptyDiv.className = 'queue-empty';
                 emptyDiv.textContent = data.error || 'Queue is empty';
-                queueList.innerHTML = '';
-                queueList.appendChild(emptyDiv);
+                queueList.replaceChildren(emptyDiv);
                 return;
             }
 
             // Clear existing queue items
-            queueList.innerHTML = '';
+            queueList.replaceChildren();
 
             data.queue.forEach((item, index) => {
                 const queueItem = document.createElement('div');
@@ -869,9 +873,8 @@
 
                 const artImg = document.createElement('img');
                 artImg.className = 'queue-item-art';
-                // Validate that the URL is from Spotify's CDN
                 const albumArtUrl = item.albumArt || '';
-                if (albumArtUrl && (albumArtUrl.startsWith('https://i.scdn.co/') || albumArtUrl.startsWith('https://mosaic.scdn.co/'))) {
+                if (isValidSpotifyImageUrl(albumArtUrl)) {
                     artImg.src = albumArtUrl;
                 }
                 artImg.alt = item.name || 'Track';

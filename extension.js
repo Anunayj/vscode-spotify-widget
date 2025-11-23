@@ -1,5 +1,10 @@
 const vscode = require('vscode');
 const https = require('https');
+
+// Constants
+const MAX_SKIP_COUNT = 50;
+const SKIP_DELAY_MS = 300;
+
 let spotifyPanel = null;
 let updateInterval = null;
 let accessToken = null;
@@ -236,16 +241,15 @@ function createOrShowSpotifyWidget(context) {
                         }
                         
                         // Limit maximum skips to prevent abuse
-                        const maxSkips = 50;
-                        if (skipCount > maxSkips) {
-                            throw new Error(`Cannot skip more than ${maxSkips} tracks at once`);
+                        if (skipCount > MAX_SKIP_COUNT) {
+                            throw new Error(`Cannot skip more than ${MAX_SKIP_COUNT} tracks at once`);
                         }
                         
                         for (let i = 0; i < skipCount; i++) {
                             await skipToNext();
                             // Delay between skips (but not after the last one) to avoid rate limiting
                             if (i < skipCount - 1) {
-                                await new Promise(resolve => setTimeout(resolve, 300));
+                                await new Promise(resolve => setTimeout(resolve, SKIP_DELAY_MS));
                             }
                         }
                         // Refresh both track and queue after skipping
