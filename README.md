@@ -26,7 +26,7 @@ A beautiful Spotify player widget for Visual Studio Code that displays your curr
 4. Fill in the details:
    - **App name**: VS Code Spotify Widget (or any name)
    - **App description**: Personal Spotify widget
-   - **Redirect URI**: `https://itsnotalexy.github.io/vscode-spotify-widget/callback`
+   - **Redirect URI**: `https://anunayj.github.io/vscode-spotify-widget-auth/`
    - **Which API/SDKs are you planning to use?**: Web API
 5. Save and open your app settings
 6. Copy your **Client ID** (NOT the Client Secret!)
@@ -58,11 +58,13 @@ A beautiful Spotify player widget for Visual Studio Code that displays your curr
 ```json
 {
   "spotifyWidget.clientId": "your_client_id_here",
+  "spotifyWidget.callbackUrl": "https://anunayj.github.io/vscode-spotify-widget-auth/",
   "spotifyWidget.refreshInterval": 1000
 }
 ```
 
 - **clientId**: Your Spotify App Client ID
+- **callbackUrl**: OAuth callback URL (must match your Spotify app redirect URI)
 - **refreshInterval**: Update frequency in milliseconds (default: 1000ms)
 
 ## Requirements

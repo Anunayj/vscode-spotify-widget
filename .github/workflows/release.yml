@@ -1,0 +1,52 @@
+name: Release Extension
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  package-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run linter
+      run: npm run lint
+      
+    - name: Run tests
+      run: |
+        xvfb-run -a npm test
+      if: runner.os == 'Linux'
+      
+    - name: Package extension
+      run: |
+        npm install -g @vscode/vsce
+        vsce package
+        
+    - name: Get VSIX filename
+      id: get-vsix
+      run: echo "vsix_file=$(ls *.vsix)" >> $GITHUB_OUTPUT
+      
+    - name: Upload VSIX to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./${{ steps.get-vsix.outputs.vsix_file }}
+        asset_name: ${{ steps.get-vsix.outputs.vsix_file }}
+        asset_content_type: application/octet-stream

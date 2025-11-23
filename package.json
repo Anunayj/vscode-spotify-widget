@@ -55,11 +55,17 @@
           "description": "Your Spotify Application Client ID (get from https://developer.spotify.com/dashboard)",
           "order": 1
         },
+        "spotifyWidget.callbackUrl": {
+          "type": "string",
+          "default": "https://anunayj.github.io/vscode-spotify-widget-auth/",
+          "description": "OAuth callback URL (must match your Spotify app redirect URI)",
+          "order": 2
+        },
         "spotifyWidget.refreshInterval": {
           "type": "number",
           "default": 1000,
           "description": "Refresh interval in milliseconds for updating currently playing track (1000ms = 1 second)",
-          "order": 2
+          "order": 3
         }
       }
     }
